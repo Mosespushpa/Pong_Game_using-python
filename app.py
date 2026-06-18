@@ -21,7 +21,6 @@ canvas {
     margin-top: 20px;
 }
 
-/* Mobile buttons */
 .controls {
     text-align:center;
     margin-top:10px;
@@ -49,7 +48,7 @@ button {
 const canvas = document.getElementById("game");
 const ctx = canvas.getContext("2d");
 
-// Sounds
+// Sound
 let hitSound = new Audio("https://www.soundjay.com/button/beep-07.wav");
 
 // Paddle
@@ -70,19 +69,17 @@ let aiScore = 0;
 let powerX = Math.random()*800;
 let powerY = Math.random()*400;
 
-// Keyboard control
-
+// ✅ UPDATED CONTROLS (W / S ONLY)
 document.addEventListener("keydown", (e) => {
     if(e.key === "w" || e.key === "W") playerY -= 20;
     if(e.key === "s" || e.key === "S") playerY += 20;
 });
 
-
-// Mobile control
+// Mobile buttons
 function moveUp(){ playerY -= 20; }
 function moveDown(){ playerY += 20; }
 
-// Draw game
+// Draw
 function draw() {
     ctx.clearRect(0,0,900,500);
 
@@ -101,7 +98,6 @@ function draw() {
     ctx.arc(x,y,10,0,Math.PI*2);
     ctx.fillStyle="white";
     ctx.fill();
-
     ctx.shadowBlur = 0;
 
     // Player paddle
@@ -131,20 +127,21 @@ function aiMove() {
     else aiY -= 3;
 }
 
-// Game update
+// Update
 function update() {
     x += dx;
     y += dy;
 
-    // Wall bounce
+    // Wall collision
     if(y < 0 || y > 500) dy *= -1;
 
-    // Paddle collision
+    // Player paddle
     if(x < 40 && y > playerY && y < playerY+100){
         dx *= -1;
         hitSound.play();
     }
 
+    // AI paddle
     if(x > 860 && y > aiY && y < aiY+100){
         dx *= -1;
         hitSound.play();
@@ -160,9 +157,9 @@ function update() {
         reset();
     }
 
-    // Power-up hit
+    // Power-up
     if(Math.abs(x-powerX)<15 && Math.abs(y-powerY)<15){
-        playerY -= 20; // boost paddle
+        playerY -= 20;
         powerX = Math.random()*800;
         powerY = Math.random()*400;
     }
@@ -184,21 +181,21 @@ function loop(){
 }
 
 loop();
-
 </script>
+
 </body>
 </html>
 """
 
 st.title("🔥 Neon Pong (Advanced Edition)")
 st.markdown("""
-✅ **Single Player vs AI**  
-✅ **Keyboard + Mobile Controls**  
-✅ **Sound + Power-ups + Neon Glow**  
+✅ Single Player vs AI 🤖  
+✅ Sound + Power-ups 💥  
+✅ Mobile Controls 📱  
 
-### Controls:
-- Desktop: Arrow Keys ⬆️⬇️  
- 
+### 🎮 Controls:
+- Desktop: **W / S keys**
+- Mobile: **Buttons below**
 """)
 
 components.html(html_code, height=600)
