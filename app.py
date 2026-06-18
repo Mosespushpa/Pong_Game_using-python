@@ -52,8 +52,8 @@ document.addEventListener("keydown", function(e) {
     if (e.key === "w") lY -= 20;
     if (e.key === "s") lY += 20;
 
-    if (e.key === "ArrowUp") rY -= 20;
-    if (e.key === "ArrowDown") rY += 20;
+    if (e.key === "i") rY -= 20;
+    if (e.key === "k") rY += 20;
 });
 
 // Draw everything
@@ -145,7 +145,7 @@ st.title("🏓 Advanced Pong Game")
 st.markdown("### Controls:")
 st.markdown("""
 - **Left Player:** W / S  
-- **Right Player:** ↑ ↓  
+- **Right Player:** I / L  
 """)
 
 components.html(html_code, height=520)
