@@ -1,117 +1,151 @@
 import streamlit as st
-import time
-import random
+import streamlit.components.v1 as components
 
-st.set_page_config(layout="wide")
+# --- HTML + JS Game ---
+html_code = """
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+    body {
+        margin: 0;
+        background: black;
+        overflow: hidden;
+    }
+    canvas {
+        display: block;
+        margin: auto;
+        background: black;
+    }
+</style>
+</head>
 
-# --- Game State ---
-if "ball_x" not in st.session_state:
-    st.session_state.ball_x = 0
-    st.session_state.ball_y = 0
-    st.session_state.ball_dx = 10
-    st.session_state.ball_dy = 10
-    st.session_state.speed = 0.05
+<body>
 
-    st.session_state.l_paddle = 0
-    st.session_state.r_paddle = 0
+<canvas id="gameCanvas" width="800" height="500"></canvas>
 
-    st.session_state.l_score = 0
-    st.session_state.r_score = 0
+<script>
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
 
+// --- Paddle ---
+const paddleWidth = 10;
+const paddleHeight = 100;
 
-# --- UI Controls ---
-col1, col2, col3 = st.columns([1,2,1])
+// Left paddle
+let lY = 200;
+// Right paddle
+let rY = 200;
 
-with col1:
-    st.subheader("Left Player")
-    if st.button("Up (W)"):
-        st.session_state.l_paddle += 20
-    if st.button("Down (S)"):
-        st.session_state.l_paddle -= 20
+// Ball
+let ballX = 400;
+let ballY = 250;
+let dx = 4;
+let dy = 4;
 
-with col3:
-    st.subheader("Right Player")
-    if st.button("Up (↑)"):
-        st.session_state.r_paddle += 20
-    if st.button("Down (↓)"):
-        st.session_state.r_paddle -= 20
+// Score
+let lScore = 0;
+let rScore = 0;
 
+// Controls
+document.addEventListener("keydown", function(e) {
+    if (e.key === "w") lY -= 20;
+    if (e.key === "s") lY += 20;
 
-# --- Game Display ---
-placeholder = st.empty()
+    if (e.key === "ArrowUp") rY -= 20;
+    if (e.key === "ArrowDown") rY += 20;
+});
 
-def draw():
-    game_html = f"""
-    <div style="background:black;height:500px;position:relative;">
-        <!-- Ball -->
-        <div style="
-            width:20px;height:20px;background:white;
-            position:absolute;
-            left:{st.session_state.ball_x + 390}px;
-            bottom:{st.session_state.ball_y + 240}px;
-            border-radius:50%;">
-        </div>
+// Draw everything
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        <!-- Left Paddle -->
-        <div style="
-            width:20px;height:100px;background:white;
-            position:absolute;
-            left:10px;
-            bottom:{st.session_state.l_paddle + 200}px;">
-        </div>
+    // Middle line
+    ctx.strokeStyle = "white";
+    ctx.setLineDash([5, 5]);
+    ctx.beginPath();
+    ctx.moveTo(400, 0);
+    ctx.lineTo(400, 500);
+    ctx.stroke();
 
-        <!-- Right Paddle -->
-        <div style="
-            width:20px;height:100px;background:white;
-            position:absolute;
-            right:10px;
-            bottom:{st.session_state.r_paddle + 200}px;">
-        </div>
+    // Ball
+    ctx.beginPath();
+    ctx.arc(ballX, ballY, 10, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
+    ctx.fill();
 
-        <!-- Score -->
-        <div style="color:white;text-align:center;font-size:40px;">
-            {st.session_state.l_score} : {st.session_state.r_score}
-        </div>
-    </div>
-    """
-    placeholder.markdown(game_html, unsafe_allow_html=True)
+    // Left paddle
+    ctx.fillRect(10, lY, paddleWidth, paddleHeight);
 
+    // Right paddle
+    ctx.fillRect(780, rY, paddleWidth, paddleHeight);
 
-# --- Game Loop ---
-run = st.button("Start Game")
+    // Score
+    ctx.font = "40px Arial";
+    ctx.fillText(lScore, 300, 50);
+    ctx.fillText(rScore, 480, 50);
+}
 
-if run:
-    for _ in range(1000):
-        time.sleep(st.session_state.speed)
+// Update logic
+function update() {
+    ballX += dx;
+    ballY += dy;
 
-        # Move ball
-        st.session_state.ball_x += st.session_state.ball_dx
-        st.session_state.ball_y += st.session_state.ball_dy
+    // Wall collision
+    if (ballY > 490 || ballY < 10) {
+        dy *= -1;
+    }
 
-        # Wall bounce
-        if st.session_state.ball_y > 250 or st.session_state.ball_y < -250:
-            st.session_state.ball_dy *= -1
+    // Right paddle collision
+    if (ballX > 770 && ballY > rY && ballY < rY + paddleHeight) {
+        dx *= -1;
+        dx *= 1.05; // speed increase
+    }
 
-        # Paddle collision
-        if (
-            st.session_state.ball_x > 340 and
-            abs(st.session_state.ball_y - st.session_state.r_paddle) < 60
-        ):
-            st.session_state.ball_dx *= -1
+    // Left paddle collision
+    if (ballX < 30 && ballY > lY && ballY < lY + paddleHeight) {
+        dx *= -1;
+        dx *= 1.05;
+    }
 
-        if (
-            st.session_state.ball_x < -340 and
-            abs(st.session_state.ball_y - st.session_state.l_paddle) < 60
-        ):
-            st.session_state.ball_dx *= -1
+    // Score
+    if (ballX > 800) {
+        lScore++;
+        resetBall();
+    }
 
-        # Score
-        if st.session_state.ball_x > 380:
-            st.session_state.l_score += 1
-            st.session_state.ball_x, st.session_state.ball_y = 0, 0
+    if (ballX < 0) {
+        rScore++;
+        resetBall();
+    }
+}
 
-        if st.session_state.ball_x < -380:
-            st.session_state.r_score += 1
-            st.session_state.ball_x, st.session_state.ball_y = 0, 0
+function resetBall() {
+    ballX = 400;
+    ballY = 250;
+    dx = -dx;
+}
 
-        draw()
+// Game loop
+function gameLoop() {
+    update();
+    draw();
+    requestAnimationFrame(gameLoop);
+}
+
+gameLoop();
+</script>
+
+</body>
+</html>
+"""
+
+# --- Streamlit UI ---
+st.title("🏓 Advanced Pong Game")
+st.markdown("### Controls:")
+st.markdown("""
+- **Left Player:** W / S  
+- **Right Player:** ↑ ↓  
+""")
+
+components.html(html_code, height=520)
