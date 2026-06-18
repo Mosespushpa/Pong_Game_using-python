@@ -71,10 +71,12 @@ let powerX = Math.random()*800;
 let powerY = Math.random()*400;
 
 // Keyboard control
+
 document.addEventListener("keydown", (e) => {
-    if(e.key === "ArrowUp") playerY -= 20;
-    if(e.key === "ArrowDown") playerY += 20;
+    if(e.key === "w" || e.key === "W") playerY -= 20;
+    if(e.key === "s" || e.key === "S") playerY += 20;
 });
+
 
 // Mobile control
 function moveUp(){ playerY -= 20; }
@@ -196,7 +198,7 @@ st.markdown("""
 
 ### Controls:
 - Desktop: Arrow Keys ⬆️⬇️  
-- Mobile: Buttons below ⬇️  
+ 
 """)
 
 components.html(html_code, height=600)
